@@ -1,0 +1,7 @@
+*env*
+database
+**/__pycache__
+**/.idea
+**/.python-version
+**/staticfiles
+**/initdb.sql

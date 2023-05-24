@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  app:
+    restart: always
+    build:
+      context: ./store
+    command: gunicorn stocks_products.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./store:/app
+    expose:
+      - 8000
+    env_file:
+      - .env_django
+    depends_on:
+      postgres:
+        condition: service_healthy
+  postgres:
+    restart: always
+    image: postgres:alpine
+    env_file:
+      - .env_postgres
+    volumes:
+      - ./database:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  nginx:
+    restart: always
+    image: nginx:alpine
+    volumes:
+      - ./nginx-conf:/etc/nginx/conf.d
+      - ./store/staticfiles:/home/staticfiles
+    ports:
+      - "80:80"
